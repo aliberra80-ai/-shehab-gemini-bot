@@ -50,19 +50,18 @@ async def on_message(message):
             response = requests.post(url, headers=headers, data=json.dumps(data))
             response_data = response.json()
             
-            # استخراج رد الذكاء الاصطناعي بشكل آمن ومضمون
-                        if 'candidates' in response_data and len(response_data['candidates']) > 0:
+            # استخراج رد الذكاء الاصطناعي بشكل سليم متوافق مع بنية JSON لـ Gemini
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
                 bot_reply = response_data['candidates'][0]['content']['parts'][0]['text']
-
                 # الرد في ديسكورد
                 await message.reply(bot_reply)
             else:
                 print(f"جوجل أرجعت خطأ: {response_data}")
-                await message.reply("عذراً، واجهت مشكلة في الاتصال بالذكاء الاصطناعي حالياً.")
+                await message.reply("عذراً، واجهت مشكلة في التحدث مع خوادم الذكاء الاصطناعي.")
             
     except Exception as e:
         print(f"Error: {e}")
-        await message.reply("عذراً، واجهت مشكلة برمجية أثناء تحضير الرد.")
+        await message.reply("عذراً، واجهت مشكلة برمجية داخل السيرفر أثناء تحضير الرد.")
 
 # تشغيل البوت قيد الحياة لـ Render
 keep_alive()
