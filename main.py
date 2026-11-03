@@ -51,8 +51,9 @@ async def on_message(message):
             response_data = response.json()
             
             # استخراج رد الذكاء الاصطناعي بشكل آمن ومضمون
-            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                        if 'candidates' in response_data and len(response_data['candidates']) > 0:
                 bot_reply = response_data['candidates'][0]['content']['parts'][0]['text']
+
                 # الرد في ديسكورد
                 await message.reply(bot_reply)
             else:
