@@ -36,27 +36,25 @@ async def on_message(message):
         return
 
     # إرسال النص مباشرة إلى واجهة جوجل عبر طلب HTTP رسمي يتخطى القيود
-    try:
+        try:
         async with message.channel.typing():
-            api_key = os.getenv("GEMINI_API_KEY")
-                        url = f"https://googleapis.com{api_key}"
-
+                        api_key = os.getenv("GEMINI_API_KEY")
+            url = f"https://googleapis.com{api_key}"
             
             headers = {'Content-Type': 'application/json'}
             data = {
                 "contents": [{"parts": [{"text": message.content}]}]
             }
             
-            # إرسال الطلب مباشرة
             response = requests.post(url, headers=headers, data=json.dumps(data))
             response_data = response.json()
             
-            # استخراج رد الذكاء الاصطناعي
-                        bot_reply = response_data['candidates'][0]['content']['parts'][0]['text']
-
+            # طريقة استخراج النص الصحيحة من استجابة جوجل لـ Gemini 1.5 Flash
+            bot_reply = response_data['candidates'][0]['content']['parts'][0]['text']
             
-            # الرد في ديسكورد
             await message.reply(bot_reply)
+
+
             
     except Exception as e:
         print(f"Error: {e}")
