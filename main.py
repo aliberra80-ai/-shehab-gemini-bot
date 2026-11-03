@@ -20,7 +20,7 @@ def keep_alive():
 
 # 2. إعداد مفتاح ذكاء Gemini الاصطناعي
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-pro")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # 3. إعداد صلاحيات البوت للديسكورد
 intents = discord.Intents.default()
