@@ -19,8 +19,14 @@ def keep_alive():
     t.start()
 
 # 2. إعداد مفتاح ذكاء Gemini الاصطناعي
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# تهيئة Gemini مع استخدام بروكسي لتخطي حظر خوادم Render
+genai.configure(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    client_options={"api_endpoint": "https://generativelanguage.googleapis.com"}
+)
+
 model = genai.GenerativeModel("gemini-1.5-flash")
+
 
 # 3. إعداد صلاحيات البوت للديسكورد
 intents = discord.Intents.default()
