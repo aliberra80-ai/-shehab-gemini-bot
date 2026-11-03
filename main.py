@@ -36,9 +36,9 @@ async def on_message(message):
         return
 
     # إرسال النص مباشرة إلى واجهة جوجل عبر طلب HTTP رسمي يتخطى القيود
-        try:
+    try:
         async with message.channel.typing():
-                        api_key = os.getenv("GEMINI_API_KEY")
+            api_key = os.getenv("GEMINI_API_KEY")
             url = f"https://googleapis.com{api_key}"
             
             headers = {'Content-Type': 'application/json'}
@@ -46,19 +46,22 @@ async def on_message(message):
                 "contents": [{"parts": [{"text": message.content}]}]
             }
             
+            # إرسال الطلب مباشرة
             response = requests.post(url, headers=headers, data=json.dumps(data))
             response_data = response.json()
             
-            # طريقة استخراج النص الصحيحة من استجابة جوجل لـ Gemini 1.5 Flash
-            bot_reply = response_data['candidates'][0]['content']['parts'][0]['text']
-            
-            await message.reply(bot_reply)
-
-
+            # استخراج رد الذكاء الاصطناعي بشكل آمن ومضمون
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                bot_reply = response_data['candidates'][0]['content']['parts'][0]['text']
+                # الرد في ديسكورد
+                await message.reply(bot_reply)
+            else:
+                print(f"جوجل أرجعت خطأ: {response_data}")
+                await message.reply("عذراً، واجهت مشكلة في الاتصال بالذكاء الاصطناعي حالياً.")
             
     except Exception as e:
         print(f"Error: {e}")
-        await message.reply("عذراً، واجهت مشكلة في الاتصال بالذكاء الاصطناعي حالياً.")
+        await message.reply("عذراً، واجهت مشكلة برمجية أثناء تحضير الرد.")
 
 # تشغيل البوت قيد الحياة لـ Render
 keep_alive()
