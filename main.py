@@ -1,45 +1,58 @@
-import os
 import discord
-from discord.ext import commands
-from google import genai
+import os
+import google.generativeai as genai
 from flask import Flask
-import threading
+from threading import Thread
 
-# تشغيل خادم ويب وهمي لحل مشكلة Port في منصة Render المجانية
+# 1. إعداد خادم Flask صغير لضمان بقاء السيرفر يعمل على Render
 app = Flask('')
-@app.route('/')
-def home(): 
-    return "البوت يعمل بنجاح ومستقر 24 ساعة!"
 
-def run(): 
+@app.route('/')
+def home():
+    return "Your service is live 🚀"
+
+def run():
     app.run(host='0.0.0.0', port=8080)
 
-threading.Thread(target=run).start()
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
-# استدعاء الرموز السرية بأمان
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
-DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
+# 2. إعداد مفتاح ذكاء Gemini الاصطناعي
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-pro")
 
-ai_client = genai.Client(api_key=GEMINI_KEY)
-
+# 3. إعداد صلاحيات البوت للديسكورد
 intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+intents.message_content = True  # قراءة محتوى الرسائل عادية
 
-@bot.event
+client = discord.Client(intents=intents)
+
+@client.event
 async def on_ready():
-    print(f'تم تشغيل البوت بنجاح باسم: {bot.user.name}')
+    print(f'تم تسجيل الدخول بنجاح باسم: {client.user}')
 
-@bot.command(name="اسأل")
-async def ask_gemini(ctx, *, question: str):
-    async with ctx.typing():
-        try:
-            response = ai_client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=question,
-            )
-            await ctx.send(response.text[:2000])
-        except Exception as e:
-            await ctx.send(f"حدث خطأ أثناء الاتصال بـ Gemini: {e}")
+@client.event
+async def on_message(message):
+    # منع البوت من الرد على الرسائل الخاصة به
+    if message.author == client.user:
+        return
 
-bot.run(DISCORD_TOKEN)
+    try:
+        # إرسال إشعار للمستخدم بأن البوت يقوم بالكتابة حالياً
+        async with message.channel.typing():
+            # إرسال نص رسالتك إلى ذكاء Gemini الاصطناعي لجلب الرد
+            response = model.generate_content(message.content)
+            
+            # إرسال رد الذكاء الاصطناعي إلى روم الديسكورد
+            await message.reply(response.text)
+    except Exception as e:
+        print(f"حدث خطأ أثناء معالجة الذكاء الاصطناعي: {e}")
+        await message.reply("عذراً، واجهت مشكلة في الاتصال بالعقل المفكر لـ Gemini حالياً.")
+
+
+# تشغيل خادم البقاء قيد الحياة لـ Render
+keep_alive()
+
+# تشغيل البوت باستخدام توكن ديسكورد المخزن بأمان
+client.run(os.getenv('DISCORD_TOKEN'))
